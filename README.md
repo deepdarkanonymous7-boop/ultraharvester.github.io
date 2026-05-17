@@ -1,8 +1,4 @@
-# ⚡ UltraHarvester
-
-> **Advanced OSINT Information Gathering Framework** — More powerful than TheHarvester
-
-UltraHarvester is a comprehensive OSINT (Open Source Intelligence) tool for professional security researchers and penetration testers. It combines email harvesting, DNS enumeration, port scanning, metadata extraction, breach detection, and web discovery into a single unified framework with both CLI and web dashboard interfaces.
+<div align="center">
 
 ```
 ██╗   ██╗██╗  ████████╗██████╗  █████╗ ██╗  ██╗ █████╗ ██████╗ ██╗   ██╗███████╗███████╗████████╗███████╗██████╗
@@ -13,72 +9,84 @@ UltraHarvester is a comprehensive OSINT (Open Source Intelligence) tool for prof
  ╚═════╝ ╚══════╝╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
 ```
 
+# UltraHarvester
+
+**All-in-one OSINT reconnaissance framework for security professionals**
+
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-64748b?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active-22c55e?style=flat-square)
+
+</div>
+
 ---
 
-## ⚠️ Legal Disclaimer
-
-**UltraHarvester is intended for authorized security testing only.**  
-Only use this tool on systems and domains you own or have explicit written permission to test.  
-Unauthorized use may violate computer crime laws in your jurisdiction.
+UltraHarvester is a full-scope OSINT framework that brings together email harvesting, DNS enumeration, port scanning, metadata extraction, breach detection, and web reconnaissance under a single command-line tool and web dashboard. Built for penetration testers and security researchers who need more than TheHarvester can offer.
 
 ---
 
-## 🚀 Features
+## ⚠️ Legal Notice
 
-| Module | Description |
+This tool is intended **exclusively** for authorized security assessments.  
+Only run UltraHarvester against systems and domains you own or have written permission to test.  
+The author takes no responsibility for any misuse or damage caused by this software.
+
+---
+
+## What it does
+
+| Module | Capabilities |
 |--------|-------------|
-| 📧 **Email Harvester** | Collect emails from Google, Bing, DuckDuckGo, Yahoo; SMTP verification; LinkedIn/Twitter/GitHub profiles; employee discovery |
-| 🌐 **DNS Enumeration** | Subdomain brute-force + passive (crt.sh, HackerTarget); DNS records (A, MX, TXT, NS, CNAME, SPF, DMARC); zone transfer; WHOIS; PassiveDNS |
-| 🔌 **Port Scanner** | Multi-threaded port scanning; banner grabbing; technology detection (Wappalyzer-style); CMS detection (WordPress, Joomla, Drupal…) |
-| 🗂️ **Metadata Extractor** | Google Dorks automation; public document discovery (PDF, DOCX, XLSX); metadata extraction (author, software, dates) |
-| 🔑 **Leak Checker** | HaveIBeenPwned API; GitHub credential leak search; Pastebin/paste site monitoring; password breach check (k-anonymity) |
-| 🖼️ **Web Discovery** | Website crawling; SSL certificate enumeration (crt.sh); Wayback Machine history; Shodan/Censys integration; IP/ASN lookup |
-| 🤖 **AI Engine** | Risk scoring (0-100); finding correlation; AI-powered executive summary (OpenAI); Telegram/Slack notifications |
-| 📊 **Output** | JSON, CSV, HTML, PDF export; interactive web dashboard; relation graph (domain → subdomain → email → person) |
+| 📧 **Email Harvester** | Scrapes Google, Bing, DuckDuckGo, Yahoo · SMTP verification · Employee & profile discovery via LinkedIn, Twitter, GitHub |
+| 🌐 **DNS Enumeration** | Subdomain brute-force (200+ prefixes) + passive recon via crt.sh · Full DNS records (A, MX, TXT, NS, CNAME, SPF, DMARC) · Zone transfer detection · WHOIS |
+| 🔌 **Port Scanner** | Multi-threaded TCP scanning · Banner grabbing · Service & technology fingerprinting · CMS detection (WordPress, Joomla, Drupal, Magento…) |
+| 🗂️ **Metadata Extractor** | 25+ Google Dorks · Discovers public PDFs, DOCXs, XLSXs · Extracts author, company, revision history, dates |
+| 🔑 **Leak Checker** | HaveIBeenPwned domain & email lookup · GitHub credential exposure search · Pastebin monitoring · k-anonymity password check |
+| 🖼️ **Web Discovery** | Recursive crawler · crt.sh SSL enumeration · Wayback Machine history · Shodan / Censys integration · IP geolocation & ASN lookup |
+| 🤖 **AI Engine** | Risk scoring 0–100 · Finding correlation · GPT-4 executive summary · Telegram & Slack alerts |
+| 📊 **Output** | JSON · CSV · HTML · PDF · Interactive web dashboard · Relation graph (domain → subdomain → email → person) |
 
 ---
 
-## 📋 Requirements
+## Requirements
 
-- Python 3.9+
+- Python **3.9** or higher
 - pip / pip3
 
-**Optional for full functionality:**
-- [Shodan API key](https://shodan.io) — deeper service intel
-- [HaveIBeenPwned API key](https://haveibeenpwned.com/API/Key) — breach detection
-- [OpenAI API key](https://platform.openai.com) — AI report summarization
+The following API keys are optional but unlock additional modules:
+
+- **Shodan** — service intelligence and CVE data
+- **HaveIBeenPwned** — breach detection
+- **OpenAI** — GPT-4 executive summary
+- **Telegram / Slack** — real-time notifications
 
 ---
 
-## 🔧 Installation
+## Installation
 
-### Option 1: pip install (recommended)
+**Option 1 — Virtual environment (recommended)**
 
 ```bash
-# Clone or extract the package
+git clone https://github.com/yourusername/ultraharvester
 cd ultraharvester
 
-# Create a virtual environment (recommended)
 python3 -m venv venv
-source venv/bin/activate      # Linux/macOS
-venv\Scripts\activate.bat     # Windows
+source venv/bin/activate       # Linux / macOS
+venv\Scripts\activate.bat      # Windows
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Install UltraHarvester
 pip install -e .
 ```
 
-### Option 2: Run directly
+**Option 2 — Run directly**
 
 ```bash
-cd ultraharvester
 pip install -r requirements.txt
 python main.py --help
 ```
 
-### Option 3: System-wide install
+**Option 3 — System-wide**
 
 ```bash
 pip install -e /path/to/ultraharvester
@@ -86,18 +94,16 @@ pip install -e /path/to/ultraharvester
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
-### API Keys (recommended)
-
-Copy `.env.example` to `.env` and fill in your keys:
+Copy the example env file and add your API keys:
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Or export environment variables:
+Or set them as environment variables:
 
 ```bash
 export SHODAN_API_KEY="your_key"
@@ -107,119 +113,78 @@ export TELEGRAM_BOT_TOKEN="your_token"
 export TELEGRAM_CHAT_ID="your_chat_id"
 ```
 
-### YAML Config File
+Using a YAML config file:
 
 ```bash
 cp config.example.yaml myconfig.yaml
-# Edit myconfig.yaml with your settings
 ultraharvester scan example.com --config myconfig.yaml
 ```
 
 ---
 
-## 💻 CLI Usage
+## Usage
 
-### Full Scan
+**Full scan**
 
 ```bash
-# Full scan with all modules
 ultraharvester scan example.com
-
-# Or using the short alias
+# short alias
 uh scan example.com
-
-# Or run directly
-python main.py scan example.com
 ```
 
-### Common Options
+**Select modules and output format**
 
 ```bash
-# Select specific modules
-ultraharvester scan example.com -m emails,dns,ports
-
-# Custom output directory and formats
-ultraharvester scan example.com -o /tmp/results -f json,html,pdf
-
-# Custom port range and threads
-ultraharvester scan example.com --ports 1-65535 -t 100
-
-# Use proxy (e.g. Burp Suite)
-ultraharvester scan example.com --proxy http://127.0.0.1:8080
-
-# Verbose mode
-ultraharvester scan example.com -v
-
-# With API keys
-ultraharvester scan example.com \
-    --shodan-key YOUR_KEY \
-    --hibp-key YOUR_KEY \
-    --openai-key YOUR_KEY
+ultraharvester scan example.com -m emails,dns,ports -f json,html,pdf
 ```
 
-### Module-Specific Commands
+**Custom threads, port range and proxy**
 
 ```bash
-# DNS only
+ultraharvester scan example.com --ports 1-65535 -t 100 --proxy http://127.0.0.1:8080
+```
+
+**Module-specific commands**
+
+```bash
 ultraharvester dns example.com
-
-# Port scan only
-ultraharvester portscan example.com --ports 1-65535
-
-# Email harvest only
 ultraharvester emails example.com
-
-# Generate report from existing JSON
-ultraharvester report output/ultraharvester_example_com_*.json -f html,pdf
+ultraharvester portscan example.com --ports 1-65535
+ultraharvester report output/scan_*.json -f html,pdf
 ```
 
-### Check Configuration
+**Web dashboard**
 
 ```bash
-ultraharvester config
-```
-
----
-
-## 🌐 Web Dashboard
-
-```bash
-# Start the web dashboard
 ultraharvester web
-
-# Custom host and port
-UH_HOST=0.0.0.0 UH_PORT=8080 ultraharvester web
+# then open http://localhost:5000
 ```
 
-Then open **http://localhost:5000** in your browser.
+---
 
-**Dashboard features:**
-- 🔍 New scan form with module selection
-- 📊 Statistics overview
-- 📁 Browse all scan results
-- 🕸️ Interactive relation graph
-- ⬇️ Download reports (JSON, HTML, PDF)
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `-m` | Modules to run: `emails,dns,ports,metadata,leaks,web,ai` |
+| `-o` | Output directory (default: `./output/`) |
+| `-f` | Export formats: `json,csv,html,pdf` |
+| `-t` | Threads for port scanning (default: 50) |
+| `--ports` | Port range — e.g. `1-65535` or `80,443,8080` |
+| `--proxy` | Proxy URL, supports HTTP and SOCKS5 |
+| `--config` | Path to YAML config file |
+| `--shodan-key` | Shodan API key (overrides `.env`) |
+| `--hibp-key` | HaveIBeenPwned API key (overrides `.env`) |
+| `--openai-key` | OpenAI API key (overrides `.env`) |
+| `-v` | Verbose output |
 
 ---
 
-## 📤 Output Formats
-
-All output is saved to the `./output/` directory (configurable):
-
-| Format | Description |
-|--------|-------------|
-| **JSON** | Full structured data, machine-readable |
-| **CSV** | Flat export, importable into Excel/Sheets |
-| **HTML** | Styled report, viewable in browser |
-| **PDF** | Professional report for sharing |
-
----
-
-## 🔍 Example Output
+## Sample output
 
 ```
 ╔══════════════════════════════════════════════════════════╗
-║          UltraHarvester — Scan Summary                  ║
+║           UltraHarvester — Scan Summary                 ║
 ╠══════════════════════════════════════════════════════════╣
 ║ Module          │ Findings  │ Status                    ║
 ╠══════════════════════════════════════════════════════════╣
@@ -239,151 +204,34 @@ Risk Level: HIGH (72/100)
 
 ---
 
-## 🧩 Module Details
+## Troubleshooting
 
-### 📧 Email Harvester
-- Searches Google, Bing, DuckDuckGo, Yahoo for email addresses
-- Generates common email format guesses (info@, admin@, support@…)
-- SMTP verification via MX record lookup + RCPT check
-- Detects disposable email domains
-- Searches LinkedIn, Twitter, GitHub for associated profiles
-- Discovers employee names via public sources
-
-### 🌐 DNS Enumeration
-- **Brute-force**: Tests 200+ common subdomain prefixes
-- **Passive**: crt.sh certificate transparency, HackerTarget
-- **Records**: A, AAAA, MX, NS, TXT, CNAME, SOA, SPF, DMARC
-- **Zone transfer**: Checks for AXFR misconfiguration (critical finding)
-- **Reverse DNS**: PTR lookups for discovered IPs
-- **WHOIS**: Registrar, dates, name servers, contacts
-- **PassiveDNS**: Historical DNS data
-
-### 🔌 Port Scanner
-- Concurrent TCP connect scan (configurable threads)
-- Service detection for 60+ known services
-- Banner grabbing from open ports
-- Web technology fingerprinting (40+ signatures)
-- CMS detection: WordPress, Joomla, Drupal, Magento, Shopify, Wix…
-- Security header analysis (HSTS, CSP, X-Frame-Options…)
-
-### 🗂️ Metadata Extractor
-- 25+ automated Google Dorks
-- Discovers: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX files
-- PDF metadata: author, creator, producer, dates, page count
-- DOCX metadata: author, company, revision history
-- XLSX metadata: creator, company, modification history
-- Finds: admin panels, login pages, config files, backups
-
-### 🔑 Leak Checker
-- **HIBP Domain**: All breached emails for your domain
-- **HIBP Email**: Per-email breach detail (breach name, date, data classes)
-- **Password check**: k-anonymity SHA-1 prefix check (privacy-preserving)
-- **GitHub**: Searches public repos for credential exposures
-- **Pastebin**: API search + Google dork for paste mentions
-- **Paste sites**: Searches 5 major paste platforms
-
-### 🖼️ Web Discovery
-- Recursive website crawler with configurable depth
-- Security header analysis per page
-- **crt.sh**: Certificate transparency — finds all issued SSL certs
-- **Wayback Machine**: Historical URL discovery (500+ URLs)
-- **Shodan**: Full host data, open ports, CVEs (requires API key)
-- **Censys**: Certificate and service data (requires API key)
-- **IP Geolocation**: City, country, ISP via ipapi.co
-- **ASN Lookup**: Autonomous System Number and org
-
-### 🤖 AI Engine
-- Risk scoring algorithm (0-100) with CVSS-style weights
-- Finds: zone transfers, dangerous open ports, missing security headers, CVEs
-- Auto-correlates: emails ↔ subdomains ↔ breaches ↔ SSL certs
-- GPT-4 executive summary (when OpenAI key provided)
-- Telegram and Slack notifications with color-coded risk badges
+| Issue | Fix |
+|-------|-----|
+| `ImportError` on startup | `pip install -r requirements.txt` |
+| DNS resolution errors | `pip install dnspython` |
+| PDF generation fails | `pip install reportlab` |
+| Slow scans | Lower threads `-t 10` · limit ports `--ports 80,443` · fewer modules `-m emails,dns` |
+| Search engine rate limiting | Use a proxy `--proxy http://127.0.0.1:8080` or Tor `--proxy socks5://127.0.0.1:9050` |
 
 ---
 
-## 🏗️ Project Structure
+## Contributing
 
-```
-ultraharvester/
-├── main.py                     # Entry point
-├── setup.py                    # Package setup
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-├── .env.example                # Environment variables template
-├── config.example.yaml         # Config file template
-└── ultraharvester/
-    ├── __init__.py
-    ├── cli.py                  # CLI commands (Click)
-    ├── core/
-    │   ├── scanner.py          # Main scan orchestrator
-    │   └── reporter.py         # Report generator
-    ├── modules/
-    │   ├── email_harvester.py  # Email discovery
-    │   ├── dns_enum.py         # DNS enumeration
-    │   ├── port_scanner.py     # Port scanning
-    │   ├── metadata.py         # Document/metadata extraction
-    │   ├── leak_checker.py     # Breach detection
-    │   ├── web_discovery.py    # Web & asset discovery
-    │   └── ai_engine.py        # AI analysis & notifications
-    ├── utils/
-    │   ├── config.py           # Configuration management
-    │   ├── logger.py           # Logging setup
-    │   └── output.py           # Export (JSON/CSV/HTML/PDF)
-    └── web/
-        ├── app.py              # Flask web dashboard
-        └── templates/
-            ├── base.html       # Base layout
-            ├── dashboard.html  # Main dashboard
-            ├── scan.html       # New scan form
-            ├── results.html    # Results list
-            └── result_detail.html  # Result + graph
-```
-
----
-
-## 🔧 Troubleshooting
-
-**ImportError on startup:**
-```bash
-pip install -r requirements.txt
-```
-
-**DNS resolution errors:**
-```bash
-pip install dnspython
-```
-
-**PDF generation fails:**
-```bash
-pip install reportlab
-```
-
-**Slow scans:**
-- Reduce threads: `-t 10`
-- Limit port range: `--ports 80,443,8080,8443`
-- Use fewer modules: `-m emails,dns`
-
-**Rate limiting from search engines:**
-- Add delays are built-in (1.5-4 seconds between requests)
-- Use a proxy: `--proxy http://127.0.0.1:8080`
-- Use Tor: `--proxy socks5://127.0.0.1:9050`
-
----
-
-## 📄 License
-
-MIT License — see LICENSE file
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-module`
-3. Commit your changes: `git commit -m 'Add new module'`
-4. Push to the branch: `git push origin feature/new-module`
+1. Fork this repository
+2. Create your branch — `git checkout -b feature/my-feature`
+3. Commit your changes — `git commit -m "Add my feature"`
+4. Push — `git push origin feature/my-feature`
 5. Open a Pull Request
 
 ---
 
-*Built for security professionals. Use responsibly.*
+## License
+
+Released under the **MIT License** — see the [LICENSE](LICENSE) file.
+
+---
+
+<div align="center">
+<sub>Built for security professionals · Use responsibly</sub>
+</div>

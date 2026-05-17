@@ -1,3 +1,28 @@
+Metadata-Version: 2.1
+Name: ultraharvester
+Version: 1.0.0
+Summary: Advanced OSINT Information Gathering Framework
+Home-page: https://github.com/ultraharvester/ultraharvester
+Author: UltraHarvester Team
+License: UNKNOWN
+Keywords: osint,information-gathering,security,reconnaissance,pentesting
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Security
+Classifier: Topic :: Internet
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # ⚡ UltraHarvester
 
 > **Advanced OSINT Information Gathering Framework** — More powerful than TheHarvester
@@ -387,3 +412,5 @@ MIT License — see LICENSE file
 ---
 
 *Built for security professionals. Use responsibly.*
+
+

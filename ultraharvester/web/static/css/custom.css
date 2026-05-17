@@ -1,0 +1,40 @@
+/* UltraHarvester — Custom styles (extend base.html) */
+
+.scan-log {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  background: #080b12;
+  border: 1px solid #1e2d45;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  color: #00ff88;
+}
+
+.scan-log .log-warn  { color: #ffd166; }
+.scan-log .log-error { color: #ff4d6d; }
+.scan-log .log-info  { color: #00d4ff; }
+.scan-log .log-debug { color: #64748b; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.55rem; border-radius: 4px;
+  font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+  background: rgba(0,255,136,0.08); color: #00ff88;
+  border: 1px solid rgba(0,255,136,0.2);
+}
+
+.tag-red    { background: rgba(255,77,109,0.08); color: #ff4d6d; border-color: rgba(255,77,109,0.2); }
+.tag-orange { background: rgba(255,140,66,0.08); color: #ff8c42; border-color: rgba(255,140,66,0.2); }
+.tag-cyan   { background: rgba(0,212,255,0.08); color: #00d4ff; border-color: rgba(0,212,255,0.2); }
+.tag-purple { background: rgba(159,122,234,0.08); color: #9f7aea; border-color: rgba(159,122,234,0.2); }
+
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(0,255,136,0.2);
+  border-top-color: #00ff88;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}{{ data.target }} — UltraHarvester{% endblock %}
+{% block page_title %}{{ data.target }}{% endblock %}
+
+{% block content %}
+{% set ai = data.get('ai', {}) %}
+{% set risk = ai.get('risk_score', 0) %}
+{% set rl = ai.get('risk_level', 'UNKNOWN') %}
+
+<!-- Risk Banner -->
+<div class="card" style="margin-bottom:1.5rem;border-color:{% if rl=='CRITICAL' %}var(--red){% elif rl=='HIGH' %}var(--orange){% elif rl=='MEDIUM' %}var(--yellow){% else %}var(--green){% endif %}">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <div style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Risk Assessment</div>
+      <div style="font-size:2rem;font-weight:700;color:{% if rl=='CRITICAL' %}var(--red){% elif rl=='HIGH' %}var(--orange){% elif rl=='MEDIUM' %}var(--yellow){% else %}var(--green){% endif %};font-family:var(--font-mono)">
+        {{ rl }} — {{ risk }}/100
+      </div>
+      <div style="color:var(--muted);font-size:0.875rem;margin-top:0.25rem">{{ ai.get('summary','')[:200] }}</div>
+    </div>
+    <div style="display:flex;gap:0.75rem">
+      <a href="/download/{{ filename }}" class="btn btn-secondary" style="text-decoration:none">⬇ Download JSON</a>
+      <a href="/results" class="btn btn-secondary" style="text-decoration:none">← Back</a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="grid grid-4" style="margin-bottom:1.5rem">
+  <div class="stat-card">
+    <div class="stat-label">Emails</div>
+    <div class="stat-value">{{ data.get('emails',{}).get('emails',[]) | length }}</div>
+    <div class="stat-sub">{{ data.get('emails',{}).get('verified',[]) | length }} verified</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Subdomains</div>
+    <div class="stat-value">{{ data.get('dns',{}).get('subdomains',[]) | length }}</div>
+    <div class="stat-sub">DNS enumeration</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Open Ports</div>
+    <div class="stat-value">{{ data.get('ports',{}).get('open_ports',[]) | length }}</div>
+    <div class="stat-sub">{{ data.get('ports',{}).get('cms','—') or '—' }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Breaches</div>
+    <div class="stat-value" style="color:var(--red)">{{ data.get('leaks',{}).get('breaches',[]) | length }}</div>
+    <div class="stat-sub">{{ data.get('leaks',{}).get('github_leaks',[]) | length }} GitHub leaks</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.5rem">
+  <!-- Security Findings -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">⚠️</span> Security Findings</div></div>
+    {% set findings = ai.get('findings', []) %}
+    {% if findings %}
+    {% for f in findings %}
+    <div style="border-left:3px solid {% if f.severity=='CRITICAL' %}var(--red){% elif f.severity=='HIGH' %}var(--orange){% elif f.severity=='MEDIUM' %}var(--yellow){% else %}var(--green){% endif %};padding:0.75rem 0.75rem 0.75rem 1rem;margin-bottom:0.75rem;background:var(--card2);border-radius:0 6px 6px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem">
+        <span style="font-size:0.875rem;font-weight:600">{{ f.title }}</span>
+        <span class="badge {% if f.severity=='CRITICAL' %}badge-red{% elif f.severity=='HIGH' %}badge-orange{% elif f.severity=='MEDIUM' %}badge-yellow{% else %}badge-green{% endif %}">{{ f.severity }}</span>
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.3rem">{{ f.description }}</p>
+      <p style="font-size:0.78rem;color:var(--cyan)">💡 {{ f.remediation }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:var(--muted);font-size:0.875rem">No critical findings detected</p>
+    {% endif %}
+  </div>
+
+  <!-- Relation Graph -->
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="icon">🕸️</span> Relation Graph</div></div>
+    <div id="graph-container" style="height:320px;background:var(--bg);border-radius:8px"></div>
+  </div>
+</div>
+
+<!-- DNS Records -->
+{% set dns = data.get('dns', {}) %}
+{% if dns.get('records') %}
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-header"><div class="card-title"><span class="icon">🌐</span> DNS Records</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+    {% for rtype, rvals in dns.records.items() %}
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.9rem">
+      <div style="font-size:0.7rem;color:var(--green);font-weight:700;margin-bottom:0.3rem;font-family:var(--font-mono)">{{ rtype }}</div>
+      {% for v in rvals %}
+      <div style="font-size:0.78rem;color:var(--text);font-family:var(--font-mono)">{{ v }}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Open Ports -->
+{% set ports = data.get('ports', {}) %}
+{% if ports.get('open_ports') %}
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-header">
+    <div class="card-title"><span class="icon">🔌</span> Open Ports</div>
+    {% if ports.get('web_technologies') %}
+    <div style="display:flex;gap:0.3rem;flex-wrap:wrap">
+      {% for t in ports.web_technologies[:6] %}<span class="badge badge-cyan" style="font-size:0.7rem">{{ t }}</span>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Port</th><th>Service</th><th>Banner</th></tr></thead>
+      <tbody>
+        {% for p in ports.open_ports %}
+        <tr>
+          <td class="mono" style="color:var(--green)">{{ p.port }}</td>
+          <td class="mono">{{ p.service }}</td>
+          <td style="font-size:0.78rem;color:var(--muted);font-family:var(--font-mono)">{{ (p.get('banner','') or '')[:80] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Emails -->
+{% set emails = data.get('emails', {}) %}
+{% if emails.get('emails') %}
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-header"><div class="card-title"><span class="icon">📧</span> Emails Found ({{ emails.emails | length }})</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:0.4rem">
+    {% for e in emails.emails[:50] %}
+    <span class="badge badge-green" style="font-size:0.78rem;font-family:var(--font-mono)">{{ e }}</span>
+    {% endfor %}
+    {% if emails.emails | length > 50 %}
+    <span class="badge badge-cyan">+{{ emails.emails | length - 50 }} more</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Subdomains -->
+{% if dns.get('subdomains') %}
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-header"><div class="card-title"><span class="icon">🌐</span> Subdomains ({{ dns.subdomains | length }})</div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Subdomain</th><th>IPs</th><th>Source</th></tr></thead>
+      <tbody>
+        {% for s in dns.subdomains[:50] %}
+        <tr>
+          <td class="mono" style="color:var(--cyan)">{{ s.subdomain }}</td>
+          <td class="mono" style="font-size:0.8rem">{{ ', '.join(s.ips) }}</td>
+          <td><span class="badge badge-cyan" style="font-size:0.7rem">{{ s.source }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Leaks -->
+{% set leaks = data.get('leaks', {}) %}
+{% if leaks.get('breaches') %}
+<div class="card" style="margin-bottom:1.5rem;border-color:var(--red)">
+  <div class="card-header"><div class="card-title"><span class="icon">🔑</span> Breach Records ({{ leaks.breaches | length }})</div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Email</th><th>Breach</th><th>Date</th><th>Data Classes</th></tr></thead>
+      <tbody>
+        {% for b in leaks.breaches[:30] %}
+        <tr>
+          <td class="mono" style="font-size:0.8rem">{{ b.get('email','') }}</td>
+          <td style="color:var(--red);font-size:0.8rem">{{ b.get('breach_name','') or ', '.join(b.get('breaches',[])[:3]) }}</td>
+          <td style="color:var(--muted);font-size:0.78rem">{{ b.get('breach_date','') }}</td>
+          <td style="font-size:0.75rem">{{ ', '.join((b.get('data_classes',[]))[:3]) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Relation graph
+(async () => {
+  const filename = {{ filename | tojson }};
+  const r = await fetch('/api/graph/' + filename);
+  const g = await r.json();
+  if (!g.nodes) return;
+  const container = document.getElementById('graph-container');
+  const colorMap = {domain:'#00ff88',subdomain:'#00d4ff',email:'#ffd166',person:'#9f7aea'};
+  const nodes = new vis.DataSet(g.nodes.map(n => ({
+    id: n.id, label: n.label, size: n.size,
+    color: colorMap[n.type] || '#64748b',
+    font: {color:'#e2e8f0',size:10},
+  })));
+  const edges = new vis.DataSet(g.edges.map(e => ({
+    from: e.from, to: e.to,
+    color: {color:'rgba(100,116,139,0.4)'},
+    width: 1,
+  })));
+  new vis.Network(container, {nodes,edges}, {
+    physics:{stabilization:{iterations:150},barnesHut:{gravitationalConstant:-3000}},
+    interaction:{hover:true,tooltipDelay:100},
+    nodes:{shape:'dot',borderWidth:0},
+    edges:{smooth:{type:'continuous'}},
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — UltraHarvester{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-4" style="margin-bottom:1.5rem" id="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Scans</div>
+    <div class="stat-value" id="stat-scans">—</div>
+    <div class="stat-sub">All time</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Emails Found</div>
+    <div class="stat-value" id="stat-emails">—</div>
+    <div class="stat-sub">Across all scans</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Subdomains</div>
+    <div class="stat-value" id="stat-subs">—</div>
+    <div class="stat-sub">Enumerated</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Breach Records</div>
+    <div class="stat-value" style="color:var(--red)" id="stat-breaches">—</div>
+    <div class="stat-sub">From HIBP</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.5rem">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📊</span> Risk Distribution</div>
+    </div>
+    <canvas id="riskChart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">⚡</span> Quick Scan</div>
+    </div>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1rem">
+      Run a full OSINT scan against any target domain
+    </p>
+    <form id="quickScanForm">
+      <div class="input-group" style="margin-bottom:1rem">
+        <label class="input-label">Target Domain</label>
+        <input class="input" type="text" name="target" placeholder="example.com" required>
+      </div>
+      <div class="grid grid-2" style="gap:0.75rem;margin-bottom:1rem">
+        <div class="input-group">
+          <label class="input-label">Modules</label>
+          <select class="input" name="modules">
+            <option value="all">All Modules</option>
+            <option value="emails,dns">Emails + DNS</option>
+            <option value="dns,ports">DNS + Ports</option>
+            <option value="emails">Emails Only</option>
+            <option value="dns">DNS Only</option>
+            <option value="ports">Ports Only</option>
+            <option value="leaks">Leaks Only</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Output</label>
+          <select class="input" name="formats">
+            <option value="json,html">JSON + HTML</option>
+            <option value="json">JSON Only</option>
+            <option value="json,html,pdf">All Formats</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+        🔍 Start Scan
+      </button>
+    </form>
+    <div id="scan-progress" style="display:none;margin-top:1rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;font-size:0.8rem">
+        <span id="scan-status-text" style="color:var(--muted)">Running scan...</span>
+        <span id="scan-pct" style="color:var(--green);font-family:var(--font-mono)">—</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="scan-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title"><span class="icon">📁</span> Recent Scans</div>
+    <a href="/results" class="btn btn-secondary" style="font-size:0.8rem;padding:0.4rem 0.9rem;text-decoration:none">View All</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Date</th>
+          <th>Risk</th>
+          <th>Emails</th>
+          <th>Subdomains</th>
+          <th>Breaches</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="recent-scans-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">
+          No scans yet — run your first scan above
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const riskColors = {CRITICAL:'#ff4d6d',HIGH:'#ff8c42',MEDIUM:'#ffd166',LOW:'#00ff88',INFO:'#00d4ff',UNKNOWN:'#64748b'};
+
+async function loadDashboard() {
+  const stats = await fetchStats();
+  document.getElementById('stat-scans').textContent = stats.total_scans || 0;
+  document.getElementById('stat-emails').textContent = stats.total_emails || 0;
+  document.getElementById('stat-subs').textContent = stats.total_subdomains || 0;
+  document.getElementById('stat-breaches').textContent = stats.total_breaches || 0;
+}
+
+async function loadRecentScans() {
+  try {
+    const r = await fetch('/results');
+    // We parse scans from the /results page, but for AJAX we need an endpoint
+    // Use the stats + results API approach
+  } catch {}
+}
+
+// Quick scan form
+document.getElementById('quickScanForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd);
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true;
+  btn.textContent = '⏳ Starting...';
+  document.getElementById('scan-progress').style.display = 'block';
+
+  try {
+    const resp = await fetch('/scan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await resp.json();
+    if (result.scan_id) {
+      pollScan(result.scan_id, btn);
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '🔍 Start Scan';
+    alert('Error: ' + err.message);
+  }
+});
+
+async function pollScan(scanId, btn) {
+  const interval = setInterval(async () => {
+    try {
+      const r = await fetch(`/api/scan/${scanId}/status`);
+      const s = await r.json();
+      document.getElementById('scan-status-text').textContent = `Status: ${s.status}`;
+      if (s.status === 'completed') {
+        clearInterval(interval);
+        document.getElementById('scan-bar').style.width = '100%';
+        document.getElementById('scan-pct').textContent = '100%';
+        btn.disabled = false;
+        btn.textContent = '✅ Done — View Results';
+        btn.onclick = () => window.location.href = '/results';
+      } else if (s.status === 'error') {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.textContent = '❌ Error — Retry';
+      } else {
+        const p = Math.min(90, (s.progress || 0) + Math.random() * 5);
+        document.getElementById('scan-bar').style.width = p + '%';
+        document.getElementById('scan-pct').textContent = Math.round(p) + '%';
+      }
+    } catch {}
+  }, 2000);
+}
+
+// Risk chart
+const riskCtx = document.getElementById('riskChart').getContext('2d');
+new Chart(riskCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Critical','High','Medium','Low','Info'],
+    datasets: [{
+      data: [0, 0, 0, 0, 0],
+      backgroundColor: ['#ff4d6d','#ff8c42','#ffd166','#00ff88','#00d4ff'],
+      borderWidth: 0,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    cutout: '70%',
+    plugins: {
+      legend: { labels: { color: '#64748b', font: { size: 12 } } }
+    }
+  }
+});
+
+loadDashboard();
+</script>
+{% endblock %}

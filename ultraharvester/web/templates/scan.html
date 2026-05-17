@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}New Scan — UltraHarvester{% endblock %}
+{% block page_title %}New Scan{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start">
+  <div>
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🎯</span> Target Configuration</div>
+      </div>
+      <form id="scanForm">
+        <div class="input-group" style="margin-bottom:1rem">
+          <label class="input-label">Target Domain *</label>
+          <input class="input" type="text" name="target" placeholder="example.com" required>
+        </div>
+        <div class="input-group" style="margin-bottom:1rem">
+          <label class="input-label">Port Range</label>
+          <input class="input" type="text" name="port_range" value="1-1000" placeholder="1-1000 or 80,443,8080">
+        </div>
+        <div class="input-group" style="margin-bottom:1rem">
+          <label class="input-label">Threads</label>
+          <input class="input" type="number" name="threads" value="20" min="1" max="100">
+        </div>
+        <div class="grid grid-2" style="gap:0.75rem;margin-bottom:1rem">
+          <div class="input-group">
+            <label class="input-label">Output Formats</label>
+            <select class="input" name="formats">
+              <option value="json,html">JSON + HTML</option>
+              <option value="json,html,pdf">JSON + HTML + PDF</option>
+              <option value="json,csv">JSON + CSV</option>
+              <option value="json">JSON Only</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Max Depth (crawl)</label>
+            <input class="input" type="number" name="max_depth" value="2" min="1" max="5">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🔑</span> API Keys (Optional)</div>
+      </div>
+      <div class="input-group" style="margin-bottom:1rem">
+        <label class="input-label">Shodan API Key</label>
+        <input class="input" type="password" name="shodan_key" form="scanForm" placeholder="For deeper recon">
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label class="input-label">HaveIBeenPwned API Key</label>
+        <input class="input" type="password" name="hibp_key" form="scanForm" placeholder="For breach lookup">
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🧩</span> Module Selection</div>
+      </div>
+      <div id="modules-grid" style="display:flex;flex-direction:column;gap:0.5rem">
+        {% set mods = [
+          ('emails','📧','Email Harvester','Google/Bing/DDG email search + SMTP verify'),
+          ('dns','🌐','DNS Enumeration','Subdomains, records, zone transfer, WHOIS'),
+          ('ports','🔌','Port Scanner','Open ports, banners, tech + CMS detection'),
+          ('metadata','🗂️','Metadata Extractor','Public docs, Google Dorks, file metadata'),
+          ('leaks','🔑','Leak Checker','HIBP, GitHub leaks, paste sites'),
+          ('web','🖼️','Web Discovery','Crawling, crt.sh, Wayback, Shodan, ASN'),
+          ('ai','🤖','AI Engine','Risk scoring, correlation, report generation'),
+        ] %}
+        {% for mid, icon, name, desc in mods %}
+        <label style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card2);transition:border-color 0.2s" class="mod-label">
+          <input type="checkbox" name="mod_{{ mid }}" value="{{ mid }}" checked style="margin-top:2px;accent-color:var(--green)">
+          <div>
+            <div style="font-size:0.875rem;color:var(--text);font-weight:500">{{ icon }} {{ name }}</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.15rem">{{ desc }}</div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" onclick="toggleAll(true)" style="font-size:0.8rem;flex:1">Select All</button>
+        <button class="btn btn-secondary" onclick="toggleAll(false)" style="font-size:0.8rem;flex:1">Deselect All</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:0.85rem" onclick="startScan()">
+      🚀 Start Scan
+    </button>
+  </div>
+</div>
+
+<!-- Scan Modal -->
+<div id="scan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:none;align-items:center;justify-content:center">
+  <div class="card" style="width:500px;max-width:90vw">
+    <div class="card-title" style="margin-bottom:1.5rem;font-size:1rem">
+      🔍 Scanning <span id="modal-target" style="color:var(--green)"></span>
+    </div>
+    <div id="module-progress" style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem"></div>
+    <div class="progress-bar" style="height:8px">
+      <div class="progress-fill" id="modal-bar" style="width:0%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.8rem">
+      <span id="modal-status" style="color:var(--muted)">Initializing...</span>
+      <span id="modal-pct" style="color:var(--green);font-family:var(--font-mono)">0%</span>
+    </div>
+    <div id="modal-done" style="display:none;margin-top:1.5rem;text-align:center">
+      <p style="color:var(--green);font-size:1rem;margin-bottom:1rem">✅ Scan Complete!</p>
+      <div style="display:flex;gap:0.75rem;justify-content:center">
+        <a href="/results" class="btn btn-primary" style="text-decoration:none">View Results</a>
+        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.mod-label').forEach(label => {
+  const cb = label.querySelector('input[type=checkbox]');
+  cb.addEventListener('change', () => {
+    label.style.borderColor = cb.checked ? 'var(--green)' : 'var(--border)';
+  });
+  if (cb.checked) label.style.borderColor = 'var(--green)';
+});
+
+function toggleAll(state) {
+  document.querySelectorAll('.mod-label input[type=checkbox]').forEach(cb => {
+    cb.checked = state;
+    cb.closest('.mod-label').style.borderColor = state ? 'var(--green)' : 'var(--border)';
+  });
+}
+
+async function startScan() {
+  const form = document.getElementById('scanForm');
+  const fd = new FormData(form);
+  const data = Object.fromEntries(fd);
+  const checked = [...document.querySelectorAll('.mod-label input:checked')].map(cb => cb.value);
+  data.modules = checked.join(',') || 'all';
+
+  if (!data.target) { alert('Please enter a target domain'); return; }
+
+  const modal = document.getElementById('scan-modal');
+  document.getElementById('modal-target').textContent = data.target;
+  modal.style.display = 'flex';
+  const modules = data.modules.split(',');
+  const progDiv = document.getElementById('module-progress');
+  progDiv.innerHTML = modules.map(m => `
+    <div style="display:flex;align-items:center;gap:0.75rem" id="modrow-${m}">
+      <span id="modico-${m}" style="font-size:1rem">⏳</span>
+      <span style="font-size:0.82rem;color:var(--muted)">${m}</span>
+      <span id="modstat-${m}" style="font-size:0.75rem;color:var(--muted);margin-left:auto">waiting</span>
+    </div>
+  `).join('');
+
+  try {
+    const resp = await fetch('/scan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    const result = await resp.json();
+    if (result.scan_id) {
+      animateProgress(modules);
+      pollScan(result.scan_id, modules);
+    }
+  } catch (err) {
+    alert('Error: ' + err);
+    modal.style.display = 'none';
+  }
+}
+
+function animateProgress(modules) {
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < modules.length) {
+      const m = modules[i];
+      document.getElementById('modico-' + m).textContent = '⚡';
+      document.getElementById('modstat-' + m).textContent = 'running';
+      document.getElementById('modstat-' + m).style.color = 'var(--yellow)';
+      if (i > 0) {
+        const prev = modules[i-1];
+        document.getElementById('modico-' + prev).textContent = '✅';
+        document.getElementById('modstat-' + prev).textContent = 'done';
+        document.getElementById('modstat-' + prev).style.color = 'var(--green)';
+      }
+      const pct = Math.round(((i+1)/modules.length)*85);
+      document.getElementById('modal-bar').style.width = pct + '%';
+      document.getElementById('modal-pct').textContent = pct + '%';
+      document.getElementById('modal-status').textContent = 'Running ' + m + '...';
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 3000);
+  window._animInterval = interval;
+}
+
+async function pollScan(scanId, modules) {
+  const interval = setInterval(async () => {
+    const r = await fetch(`/api/scan/${scanId}/status`);
+    const s = await r.json();
+    if (s.status === 'completed' || s.status === 'error') {
+      clearInterval(interval);
+      clearInterval(window._animInterval);
+      modules.forEach(m => {
+        document.getElementById('modico-' + m).textContent = s.status === 'completed' ? '✅' : '❌';
+        document.getElementById('modstat-' + m).textContent = s.status;
+      });
+      document.getElementById('modal-bar').style.width = '100%';
+      document.getElementById('modal-pct').textContent = '100%';
+      document.getElementById('modal-status').textContent = s.status === 'completed' ? 'Complete!' : 'Error';
+      document.getElementById('modal-done').style.display = 'block';
+    }
+  }, 3000);
+}
+
+function closeModal() {
+  document.getElementById('scan-modal').style.display = 'none';
+}
+</script>
+{% endblock %}

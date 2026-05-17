@@ -1,0 +1,41 @@
+# UltraHarvester — Example Configuration File
+# Usage: ultraharvester scan example.com --config config.yaml
+
+target: ""
+domain: ""
+output_dir: "./output"
+output_formats:
+  - json
+  - html
+  - pdf
+
+threads: 20
+timeout: 10
+delay: 1.0
+verbose: false
+proxy: null
+
+modules:
+  - emails
+  - dns
+  - ports
+  - metadata
+  - leaks
+  - web
+  - ai
+
+
+port_range: "1-1000"
+
+max_depth: 3
+subdomain_wordlist: null  
+
+
+shodan_api_key: null
+censys_api_id: null
+censys_api_secret: null
+hibp_api_key: null
+openai_api_key: null
+telegram_bot_token: null
+telegram_chat_id: null
+slack_webhook_url: null

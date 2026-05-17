@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}UltraHarvester{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/dist/vis-network.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/dist/dist/vis-network.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b12;
+      --bg2: #0e1117;
+      --card: #111827;
+      --card2: #1a2235;
+      --border: #1e2d45;
+      --green: #00ff88;
+      --green2: #00cc6a;
+      --cyan: #00d4ff;
+      --red: #ff4d6d;
+      --orange: #ff8c42;
+      --yellow: #ffd166;
+      --purple: #9f7aea;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 10px;
+      --glow: 0 0 20px rgba(0, 255, 136, 0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      display: flex;
+      min-height: 100vh;
+    }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { color: var(--cyan); }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo h1 {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+    .sidebar-logo p {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      font-family: var(--font-mono);
+    }
+    .sidebar-nav { padding: 1rem 0; flex: 1; }
+    .nav-section { padding: 0.5rem 1rem; font-size: 0.65rem; color: var(--muted);
+                   text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0.5rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.875rem; color: var(--muted); cursor: pointer;
+      transition: all 0.2s; border-left: 2px solid transparent;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--green); background: rgba(0,255,136,0.05);
+      border-left-color: var(--green);
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+                  display: inline-block; animation: pulse 2s infinite; margin-right: 6px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Main content */
+    .main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+    .topbar-actions { display: flex; gap: 1rem; align-items: center; }
+    .badge {
+      padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem;
+      font-family: var(--font-mono); font-weight: 600;
+    }
+    .badge-green { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid var(--green2); }
+    .badge-red { background: rgba(255,77,109,0.15); color: var(--red); border: 1px solid var(--red); }
+    .badge-orange { background: rgba(255,140,66,0.15); color: var(--orange); border: 1px solid var(--orange); }
+    .badge-yellow { background: rgba(255,209,102,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge-cyan { background: rgba(0,212,255,0.15); color: var(--cyan); border: 1px solid var(--cyan); }
+
+    .content { padding: 2rem; flex: 1; }
+
+    /* Cards */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .card-title { font-size: 0.9rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 0.5rem; }
+    .card-title .icon { font-size: 1.1rem; }
+
+    /* Grid */
+    .grid { display: grid; gap: 1.25rem; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+    /* Stat cards */
+    .stat-card {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--green); font-family: var(--font-mono);
+                  margin: 0.25rem 0; }
+    .stat-sub { font-size: 0.8rem; color: var(--muted); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { background: var(--card2); color: var(--muted); font-size: 0.7rem; text-transform: uppercase;
+         letter-spacing: 1px; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,45,69,0.5); color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(0,255,136,0.03); }
+    .mono { font-family: var(--font-mono); }
+
+    /* Buttons */
+    .btn {
+      padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.875rem;
+      font-weight: 500; cursor: pointer; border: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-primary { background: var(--green); color: #000; }
+    .btn-primary:hover { background: var(--green2); box-shadow: var(--glow); }
+    .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+    .btn-danger { background: rgba(255,77,109,0.1); color: var(--red); border: 1px solid var(--red); }
+
+    /* Input */
+    .input {
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.65rem 1rem; border-radius: 6px;
+      font-size: 0.875rem; width: 100%; outline: none;
+      font-family: var(--font-sans);
+      transition: border-color 0.2s;
+    }
+    .input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(0,255,136,0.1); }
+    .input::placeholder { color: var(--muted); }
+    .input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .input-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    /* Progress */
+    .progress-bar { height: 6px; background: var(--card2); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan));
+                     border-radius: 3px; transition: width 0.5s; }
+
+    /* Risk gauge */
+    .risk-critical { color: var(--red); }
+    .risk-high { color: var(--orange); }
+    .risk-medium { color: var(--yellow); }
+    .risk-low { color: var(--green); }
+    .risk-info { color: var(--cyan); }
+
+    /* Code block */
+    .code { background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+             padding: 1rem; font-family: var(--font-mono); font-size: 0.8rem;
+             overflow-x: auto; color: var(--green); white-space: pre-wrap; word-break: break-all; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>⚡ UltraHarvester</h1>
+      <p>OSINT Framework v1.0.0</p>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a href="/scan" class="nav-item {% if request.path == '/scan' %}active{% endif %}">
+        <span class="nav-icon">🔍</span> New Scan
+      </a>
+      <a href="/results" class="nav-item {% if request.path.startswith('/results') %}active{% endif %}">
+        <span class="nav-icon">📁</span> Results
+      </a>
+      <div class="nav-section">Modules</div>
+      <div class="nav-item"><span class="nav-icon">📧</span> Email Harvester</div>
+      <div class="nav-item"><span class="nav-icon">🌐</span> DNS Enum</div>
+      <div class="nav-item"><span class="nav-icon">🔌</span> Port Scanner</div>
+      <div class="nav-item"><span class="nav-icon">🗂️</span> Metadata</div>
+      <div class="nav-item"><span class="nav-icon">🔑</span> Leak Checker</div>
+      <div class="nav-item"><span class="nav-icon">🖼️</span> Web Discovery</div>
+    </div>
+    <div class="sidebar-footer">
+      <span class="status-dot"></span>System Online
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+      <div class="topbar-actions">
+        <span class="badge badge-green">v1.0.0</span>
+        <a href="/scan" class="btn btn-primary" style="text-decoration:none">+ New Scan</a>
+      </div>
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script>
+    async function fetchStats() {
+      try {
+        const r = await fetch('/api/stats');
+        return await r.json();
+      } catch { return {}; }
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,4 @@
+[console_scripts]
+uh = ultraharvester.cli:main
+ultraharvester = ultraharvester.cli:main
+
